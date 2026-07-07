@@ -1,0 +1,44 @@
+{
+  "name": "gobiz-pay",
+  "version": "1.0.0",
+  "description": "TypeScript module for interacting with the GoBiz (GoPay Merchant) API: transaction history, real-time payment monitoring, and dynamic QRIS.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "gobiz-pay-demo": "./dist/cli.js"
+  },
+  "files": ["dist"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx watch src/cli.ts",
+    "demo": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": ["gopay", "gobiz", "gojek", "payment", "merchant", "qris", "indonesia"],
+  "license": "MIT",
+  "dependencies": {
+    "crc": "^4.3.2",
+    "dotenv": "^16.4.5",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/crc": "^4.0.0",
+    "@types/node": "^20.14.0",
+    "@types/qrcode": "^1.5.6",
+    "tsup": "^8.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
