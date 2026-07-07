@@ -1,7 +1,15 @@
 {
   "name": "gobiz-pay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "TypeScript module for interacting with the GoBiz (GoPay Merchant) API: transaction history, real-time payment monitoring, and dynamic QRIS.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ItsAzni/gobiz-pay.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ItsAzni/gobiz-pay/issues"
+  },
+  "homepage": "https://github.com/ItsAzni/gobiz-pay#readme",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

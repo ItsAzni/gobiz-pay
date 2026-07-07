@@ -1,29 +1,29 @@
 # gobiz-pay
 
-SDK/Modul TypeScript untuk berinteraksi dengan API GoBiz (GoPay Merchant). Memungkinkan pengambilan riwayat transaksi, pemantauan pembayaran masuk secara real-time (polling), serta pembuatan QRIS dinamis.
+TypeScript SDK/module for interacting with the GoBiz (GoPay Merchant) API. It supports fetching transaction history, monitoring incoming payments in real-time (via polling), and generating dynamic QRIS payloads.
 
-## Fitur Utama
+## Key Features
 
-- **Autentikasi Fleksibel**: Mendukung login berbasis password maupun passwordless (OTP email/nomor HP).
-- **Manajemen Sesi Otomatis**: Kredensial disimpan terenkripsi secara lokal di direktori kerja (`.gobiz-cache.json`).
-- **QRIS Dinamis**: Memformat payload QRIS statis menjadi dinamis berdasarkan nominal transaksi.
-- **Real-time Monitoring**: Memantau pembayaran masuk dengan mekanisme polling yang toleran terhadap perbedaan nominal bayar.
+- **Flexible Authentication**: Supports both password-based and passwordless (Email/Phone OTP) login.
+- **Automatic Session Management**: Credentials and session tokens are securely cached locally in the working directory (`.gobiz-cache.json`).
+- **Dynamic QRIS Generation**: Formats static QRIS payloads into dynamic QRIS based on transaction amounts.
+- **Real-Time Monitoring**: Monitors incoming payments via a polling mechanism with customizable amount tolerances.
 
-## Persyaratan Sistem
+## System Requirements
 
 - Node.js >= 18
-- Akun Merchant GoBiz aktif
-- QRIS statis merchant (untuk pembentukan QRIS dinamis)
+- An active GoBiz Merchant Account
+- Merchant's static QRIS string (for dynamic QRIS generation)
 
-## Instalasi
+## Installation
 
 ```bash
 npm install gobiz-pay
 ```
 
-## Konfigurasi
+## Configuration
 
-Buat file `.env` pada root direktori proyek Anda:
+Create a `.env` file in the root of your project:
 
 ```env
 GOPAY_EMAIL=email@merchant.com
@@ -31,40 +31,40 @@ GOPAY_PASSWORD=password_merchant
 QRIS_STRING=0002010102112657...
 ```
 
-*Catatan: Token autentikasi dan ID Merchant akan disimpan otomatis dalam `.gobiz-cache.json` untuk menghindari proses login berulang.*
+*Note: Session tokens and Merchant IDs are cached automatically in `.gobiz-cache.json` in the current working directory to avoid re-authentication.*
 
 ---
 
-## Panduan Penggunaan
+## Usage Guide
 
-### 1. Autentikasi (Login)
+### 1. Authentication (Login)
 
-#### Menggunakan Kredensial `.env` (Email & Password)
+#### Using Credentials from `.env` (Email & Password)
 ```ts
 import { GoPayMerchant } from "gobiz-pay";
 
 const merchant = new GoPayMerchant();
-await merchant.init(); // Otomatis melakukan autentikasi & inisialisasi sesi
+await merchant.init(); // Authenticates and initializes the session automatically
 ```
 
-#### Menggunakan OTP (Email / Nomor HP)
+#### Using OTP (Email / Phone Number)
 ```ts
 import { GoPayMerchant } from "gobiz-pay";
 
 const merchant = new GoPayMerchant();
 
-// Pilihan A: OTP via Email
+// Option A: OTP via Email
 await merchant.requestLoginOtp();
 await merchant.loginWithOtp("123456");
 
-// Pilihan B: OTP via Nomor HP
-await merchant.requestPhoneOtp("85123456789"); // Default kode negara "62"
+// Option B: OTP via Phone Number
+await merchant.requestPhoneOtp("85123456789"); // Defaults to country code "62"
 await merchant.loginWithPhone("123456");
 ```
 
 ---
 
-### 2. Riwayat Transaksi
+### 2. Transaction History
 
 ```ts
 const result = await merchant.getHistory({ days: 1, size: 20 });
@@ -74,21 +74,21 @@ if (result.status && result.data) {
     console.log(`${tx.time} - ${tx.amount.displayed_text}`);
   }
 } else {
-  console.log(result.message || "Transaksi tidak ditemukan.");
+  console.log(result.message || "No transactions found.");
 }
 ```
 
-#### Parameter `getHistory`:
-| Parameter | Tipe | Default | Keterangan |
+#### `getHistory` Options:
+| Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `days` | `number` | `1` | Jangkauan hari penarikan data ke belakang |
-| `size` | `number` | `50` | Jumlah maksimal transaksi yang diambil |
+| `days` | `number` | `1` | Range of days in the past to fetch transaction history |
+| `size` | `number` | `50` | Maximum number of transaction records to retrieve |
 
 ---
 
-### 3. Pemantauan Pembayaran Masuk
+### 3. Monitoring Incoming Payments
 
-Gunakan watcher singleton untuk memantau pembayaran masuk secara real-time:
+Use the shared watcher singleton to monitor incoming payments in real-time:
 
 ```ts
 import { getGoPayWatcher } from "gobiz-pay";
@@ -96,62 +96,62 @@ import { getGoPayWatcher } from "gobiz-pay";
 const watcher = getGoPayWatcher();
 
 try {
-  // Menunggu pembayaran Rp 50.000 dengan batas waktu 5 menit dan toleransi selisih Rp 100
+  // Waits for an IDR 50,000 payment with a 5-minute timeout and an IDR 100 tolerance
   const tx = await watcher.waitForPayment(50000, { 
     timeout: 300_000, 
     tolerance: 100 
   });
-  console.log(`Pembayaran Diterima! ID: ${tx.txId}, Nominal: Rp ${tx.amount}`);
+  console.log(`Payment Received! ID: ${tx.txId}, Amount: IDR ${tx.amount.toLocaleString("en-US")}`);
 } catch (error) {
-  console.error("Gagal mendeteksi pembayaran:", error.message);
+  console.error("Failed to detect payment:", error.message);
 }
 ```
 
-#### Parameter `waitForPayment`:
-| Parameter | Tipe | Default | Keterangan |
+#### `waitForPayment` Options:
+| Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `amount` | `number` | *Wajib* | Nominal pembayaran yang ditunggu |
-| `timeout` | `number` | `300000` | Batas waktu pemantauan dalam milidetik (ms) |
-| `tolerance` | `number` | `0` | Toleransi perbedaan selisih nominal transaksi |
+| `amount` | `number` | *Required* | Expected transaction amount (IDR) |
+| `timeout` | `number` | `300000` | Timeout threshold in milliseconds (ms) |
+| `tolerance` | `number` | `0` | Expected amount deviation tolerance (IDR) |
 
 ---
 
-### 4. Membuat QRIS Dinamis
+### 4. Generating Dynamic QRIS
 
 ```ts
 import { buildDynamicQris } from "gobiz-pay";
 
-const payloadDinamis = buildDynamicQris(process.env.QRIS_STRING!, 50000);
+const dynamicPayload = buildDynamicQris(process.env.QRIS_STRING!, 50000);
 ```
 
 ---
 
 ## CLI Demo
 
-Proyek menyediakan utilitas CLI untuk menguji alur secara langsung.
+The project includes a CLI utility for testing the payment workflow directly.
 
-### Langkah 1: Login & Simpan Sesi
-Pilih salah satu perintah login untuk mendapatkan token:
+### Step 1: Authenticate and Save Session
+Run one of the login commands to generate and cache your token:
 ```bash
-# Login menggunakan GOPAY_EMAIL & GOPAY_PASSWORD dari .env
+# Login using GOPAY_EMAIL & GOPAY_PASSWORD from .env
 npm run demo -- login
 
-# Login interaktif menggunakan OTP Email
+# Interactive login using Email OTP
 npm run demo -- login --otp
 
-# Login interaktif menggunakan OTP Nomor HP
+# Interactive login using Phone OTP
 npm run demo -- login --phone
 ```
 
-### Langkah 2: Buat QRIS & Pantau Pembayaran
-Setelah sesi tersimpan, jalankan pemantauan transaksi:
+### Step 2: Generate QRIS & Watch Payment
+Once authenticated, you can initiate a transaction:
 ```bash
-# Membuat QRIS Rp 50.000 dan memantau status pembayaran masuk
+# Generates an IDR 50,000 QRIS and monitors the payment status in real-time
 npm run demo -- 50000
 ```
 
 ---
 
-## Lisensi
+## License
 
 [MIT License](LICENSE)
